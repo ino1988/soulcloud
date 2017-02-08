@@ -764,10 +764,15 @@
               console.log("jquery.fileupload.js: _doFileDedup function, md5str = " + md5str);
               file.hash = md5str;
             });
-            //var fdXHR;
-            //fdXHR = $.ajax({url:"/owncloud/index.php/apps/files/ajax/filededup.php",
-            //                async:false});
-            //console.log(fdXHR);
+            var fdXHR;
+            fdXHR = $.ajax({url:"/owncloud/index.php/apps/files/ajax/filededup.php",
+                            async:false});
+            //var fdXHR = window.XMLHttpRequest ?  new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP") ;
+            //fdXHR.readyState = "4";
+	          //fdXHR.responseText = '[{"id":113,"parentId":2,"mtime":1486460111000,"name":"id_rsa.pub","permissions":27,"mimetype":"application\/octet-stream","size":408,"type":"file","etag":"158dfeb81dbc51203a3e79eb8604609b","status":"success","originalname":"id_rsa.pub","uploadMaxFilesize":537919488,"maxHumanFilesize":"513 MB","directory":"\/"}]';
+            //fdXHR.status = 200;
+            //fdXHR.statusText = "OK";
+            console.log(fdXHR);
 
         },
 
