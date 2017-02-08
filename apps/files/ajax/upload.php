@@ -45,6 +45,10 @@ OCP\JSON::setContentTypeHeader('text/plain');
 $errorCode = null;
 
 $l = \OC::$server->getL10N('files');
+if (isset($_POST['dir'])) {
+  \OC::$server->getLogger()->alert("upload test:  ---------1111111111111111111111111\$dir is : $dir", array('app' => 'files'));
+}
+sleep(10);
 \OC::$server->getLogger()->alert("upload test:  -----------------------------------------", array('app' => 'files'));
 \OC::$server->getLogger()->alert("upload test:  \$l is : $l", array('app' => 'files'));
 if (empty($_POST['dirToken'])) {
@@ -154,7 +158,13 @@ if ($maxUploadFileSize >= 0 and $totalSize > $maxUploadFileSize) {
 	exit();
 }
 
-\OC::$server->getLogger()->alert("upload test: \$dir is $dir", array('app' => 'files'));
+\OC::$server->getLogger()->alert("upload test -----------1231332222222222222222222222222222: \$dir is $dir", array('app' => 'files'));
+if (isset($_POST['resolution'])) {
+  \OC::$server->getLogger()->alert("222222222222222: \$dir is $dir", array('app' => 'files'));
+  \OC::$server->getLogger()->alert(print_r($_POST['resolution'], true), array('app' => 'files'));
+}
+\OC::$server->getLogger()->alert("upload test -----------1231332233333333333333333333333333: \$dir is $dir", array('app' => 'files'));
+
 
 $result = array();
 if (\OC\Files\Filesystem::isValidPath($dir) === true) {

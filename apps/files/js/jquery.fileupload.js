@@ -763,6 +763,8 @@
             hashMe(file, function OutputHash(md5str) {
               console.log("jquery.fileupload.js: _doFileDedup function, md5str = " + md5str);
               file.hash = md5str;
+              //addFormData(data.formData, {dir: md5str});
+              data.formData.dir = data.formData.dir + "--" + md5str;
             });
             //var fdXHR;
             //fdXHR = $.ajax({url:"/owncloud/index.php/apps/files/ajax/filededup.php",
