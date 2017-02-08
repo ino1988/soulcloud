@@ -44,9 +44,15 @@ OCP\JSON::setContentTypeHeader('text/plain');
 
 $errorCode = null;
 
+if (isset($_POST['md5str'])) {
+  \OC::$server->getLogger()->alert("upload test:  +++++++++++++++++++++++++++++", array('app' => 'files'));
+  $s = (string)$_POST['md5str'];
+  \OC::$server->getLogger()->alert("upload test:  \$s is : %s" , array('app' => 'files'));
+  return 1;
+}
+
 $l = \OC::$server->getL10N('files');
 \OC::$server->getLogger()->alert("upload test:  -----------------------------------------", array('app' => 'files'));
-\OC::$server->getLogger()->alert("upload test:  \$l is : $l", array('app' => 'files'));
 if (empty($_POST['dirToken'])) {
 	// The standard case, files are uploaded through logged in users :)
 	OCP\JSON::checkLoggedIn();
