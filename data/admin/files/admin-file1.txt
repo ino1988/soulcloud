@@ -1,0 +1,3 @@
+sdlkfgjaskldgjaslkdgj 
+
+这是管理员用户的file1，用于检测所有用户的文件集中存储

@@ -1,0 +1,20 @@
+--- lib/private/legacy/app.php
++++ lib/private/legacy/app.php
+@@ -429,7 +429,7 @@
+ 
+                $settings = array();
+                // by default, settings only contain the help menu
+-               if (OC_Util::getEditionString() === '' &&
++               /*if (OC_Util::getEditionString() === '' &&
+                        \OC::$server->getSystemConfig()->getValue('knowledgebaseenabled', true) == true
+                ) {
+                        $settings = array(
+@@ -441,7 +441,7 @@
+                                        "icon" => $urlGenerator->imagePath("settings", "help.svg")
+                                )
+                        );
+-               }
++               }*/
+ 
+                // if the user is logged-in
+                if (OC_User::isLoggedIn()) {
