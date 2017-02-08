@@ -29,6 +29,8 @@
 		<?php foreach($_['jsfiles'] as $jsfile): ?>
 			<script src="<?php print_unescaped($jsfile); ?>"></script>
 		<?php endforeach; ?>
+    <script src="/owncloud/apps/files/js/hash.js"></script>
+    <script src="/owncloud/apps/files/js/sha.js"></script>
 		<?php print_unescaped($_['headers']); ?>
 	</head>
 	<body id="<?php p($_['bodyid']);?>">

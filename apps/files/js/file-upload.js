@@ -78,6 +78,7 @@ OC.Upload = {
 	 * @param {object} data
 	 */
 	deleteUpload:function(data) {
+		console.log("file-upload.js: deleteUpload function");
 		delete data.jqXHR;
 	},
 	/**
@@ -126,6 +127,7 @@ OC.Upload = {
 	 * @param {object} conflicts - list of conflict elements
 	 */
 	onContinue:function(conflicts) {
+		console.log("file-upload.js: onContinue function");
 		var self = this;
 		//iterate over all conflicts
 		jQuery.each(conflicts, function (i, conflict) {
@@ -158,6 +160,7 @@ OC.Upload = {
 	 * @param {object} data
 	 */
 	onReplace:function(data) {
+		console.log("file-upload.js: onReplace function");
 		this.log('replace', null, data);
 		if (data.data) {
 			data.data.append('resolution', 'replace');
@@ -167,6 +170,7 @@ OC.Upload = {
 			}
 			addFormData(data.formData, {resolution: 'replace'});
 		}
+    console.log("file-upload.js: onReplace function, before data.submit");
 		data.submit();
 	},
 	/**
@@ -174,6 +178,7 @@ OC.Upload = {
 	 * @param {object} data
 	 */
 	onAutorename:function(data) {
+		console.log("file-upload.js: onAutorename function");
 		this.log('autorename', null, data);
 		if (data.data) {
 			data.data.append('resolution', 'autorename');
@@ -183,9 +188,10 @@ OC.Upload = {
 			}
 			addFormData(data.formData, {resolution: 'autorename'});
 		}
+    console.log("file-upload.js: onAutorename function, , before data.submit");
 		data.submit();
 	},
-	_trace:false, //TODO implement log handler for JS per class?
+	_trace:true, //TODO implement log handler for JS per class?
 	log:function(caption, e, data) {
 		if (this._trace) {
 			console.log(caption);
@@ -205,6 +211,7 @@ OC.Upload = {
 	 * @param {function} callbacks.onCancel
 	 */
 	checkExistingFiles: function (selection, callbacks) {
+		console.log("file-upload.js: checkExistingFiles function");
 		var fileList = FileList;
 		var conflicts = [];
 		// only keep non-conflicting uploads
@@ -236,6 +243,7 @@ OC.Upload = {
 		// note: when reaching the server they might still meet conflicts
 		// if the folder was concurrently modified, these will get added
 		// to the already visible dialog, if applicable
+		console.log("file-upload.js: checkExistingFiles function,  callbacks.onNoConflicts");
 		callbacks.onNoConflicts(selection);
 	},
 
@@ -270,6 +278,7 @@ OC.Upload = {
 	},
 
 	init: function() {
+		console.log("file-upload.js: init function");
 		var self = this;
 		if ( $('#file_upload_start').exists() ) {
 			var file_upload_param = {
@@ -295,6 +304,8 @@ OC.Upload = {
 				 * @returns {boolean}
 				 */
 				add: function(e, data) {
+					console.log("file-upload.js: init add function");
+					console.log(data);
 					OC.Upload.log('add', e, data);
 					var that = $(this), freeSpace;
 
@@ -406,6 +417,7 @@ OC.Upload = {
 
 							onNoConflicts: function (selection) {
 								$.each(selection.uploads, function(i, upload) {
+                  console.log("file-upload.js,  function onNoConflicts");
 									upload.submit();
 								});
 							},
@@ -436,21 +448,32 @@ OC.Upload = {
 				 * @param {object} e
 				 */
 				start: function(e) {
+					console.log("file-upload.js: init start function");
+					console.log(e);
 					OC.Upload.log('start', e, null);
 					//hide the tooltip otherwise it covers the progress bar
 					$('#upload').tipsy('hide');
 				},
 				submit: function(e, data) {
+					console.log("file-upload.js: init submit function");
+					console.log("e is");
+					console.log(e);
+					console.log("data is");
+					console.log(data);
+
+					console.log("file-upload.js: init submit function   1");
 					OC.Upload.rememberUpload(data);
 					if (!data.formData) {
 						data.formData = {};
 					}
 
+					console.log("file-upload.js: init submit function   2");
 					var fileDirectory = '';
 					if(typeof data.files[0].relativePath !== 'undefined') {
 						fileDirectory = data.files[0].relativePath;
 					}
 
+					console.log("file-upload.js: init submit function  3");
 					var params = {
 						requesttoken: oc_requesttoken,
 						dir: data.targetDir || FileList.getCurrentDirectory(),
@@ -460,9 +483,12 @@ OC.Upload = {
 						params.isReceivedShare = true;
 					}
 
+					console.log("file-upload.js: init submit function  4");
 					addFormData(data.formData, params);
+					console.log("file-upload.js: init submit function  5");
 				},
 				fail: function(e, data) {
+					console.log("file-upload.js: init fail function");
 					OC.Upload.log('fail', e, data);
 					if (typeof data.textStatus !== 'undefined' && data.textStatus !== 'success' ) {
 						if (data.textStatus === 'abort') {
@@ -491,6 +517,7 @@ OC.Upload = {
 				 * @param {object} data
 				 */
 				done:function(e, data) {
+					console.log("file-upload.js: init done function");
 					OC.Upload.log('done', e, data);
 					// handle different responses (json or body from iframe for ie)
 					var response;
@@ -551,6 +578,8 @@ OC.Upload = {
 			// initialize jquery fileupload (blueimp)
 			var fileupload = $('#file_upload_start').fileupload(file_upload_param);
 			window.file_upload_param = fileupload;
+			console.log("file-upload.js: init function, fileupload is");
+			console.log(fileupload);
 
 			if (supportAjaxUploadWithProgress()) {
 				//remaining time
@@ -583,7 +612,7 @@ OC.Upload = {
 							+ '</span><span class="mobile">'
 							+ t('files', '...')
 							+ '</span></em>');
-                    $('#uploadprogressbar').tipsy({gravity:'n', fade:true, live:true});
+					$('#uploadprogressbar').tipsy({gravity:'n', fade:true, live:true});
 					OC.Upload._showProgressBar();
 				});
 				fileupload.on('fileuploadprogress', function(e, data) {

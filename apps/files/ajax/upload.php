@@ -45,6 +45,8 @@ OCP\JSON::setContentTypeHeader('text/plain');
 $errorCode = null;
 
 $l = \OC::$server->getL10N('files');
+\OC::$server->getLogger()->alert("upload test:  -----------------------------------------", array('app' => 'files'));
+\OC::$server->getLogger()->alert("upload test:  \$l is : $l", array('app' => 'files'));
 if (empty($_POST['dirToken'])) {
 	// The standard case, files are uploaded through logged in users :)
 	OCP\JSON::checkLoggedIn();
@@ -129,6 +131,8 @@ foreach ($_FILES['files']['error'] as $error) {
 	}
 }
 $files = $_FILES['files'];
+\OC::$server->getLogger()->alert("upload test: \$files is $files", array('app' => 'files'));
+\OC::$server->getLogger()->alert(print_r($files, true), array('app' => 'files'));
 
 $error = false;
 
@@ -149,6 +153,8 @@ if ($maxUploadFileSize >= 0 and $totalSize > $maxUploadFileSize) {
 		'maxHumanFilesize' => $maxHumanFileSize)));
 	exit();
 }
+
+\OC::$server->getLogger()->alert("upload test: \$dir is $dir", array('app' => 'files'));
 
 $result = array();
 if (\OC\Files\Filesystem::isValidPath($dir) === true) {
@@ -184,6 +190,7 @@ if (\OC\Files\Filesystem::isValidPath($dir) === true) {
 			$returnedDir = $dir . $relativePath;
 		}
 		$returnedDir = \OC\Files\Filesystem::normalizePath($returnedDir);
+    \OC::$server->getLogger()->alert("upload test: \$target is $target", array('app' => 'files'));
 
 
 		$exists = \OC\Files\Filesystem::file_exists($target);
@@ -194,6 +201,9 @@ if (\OC\Files\Filesystem::isValidPath($dir) === true) {
 			// upload and overwrite file
 			try
 			{
+        $tmpFile = $files['tmp_name'][$i];
+        \OC::$server->getLogger()->alert("upload test: \$tmpFile is $tmpFile", array('app' => 'files'));
+        //sleep(100);
 				if (is_uploaded_file($files['tmp_name'][$i]) and \OC\Files\Filesystem::fromTmpFile($files['tmp_name'][$i], $target)) {
 
 					// updated max file size after upload
@@ -224,6 +234,7 @@ if (\OC\Files\Filesystem::isValidPath($dir) === true) {
 		} else {
 			// file already exists
 			$meta = \OC\Files\Filesystem::getFileInfo($target);
+      \OC::$server->getLogger()->alert("upload test: file already exists \$meta is $meta", array('app' => 'files'));
 			if ($meta === false) {
 				$error = $l->t('Upload failed. Could not get file info.');
 			} else {

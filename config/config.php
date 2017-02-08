@@ -22,4 +22,5 @@ $CONFIG = array (
   'installed' => true,
   'memcache.local' => '\\OC\\Memcache\\APCu',
   'loglevel' => 0,
+  'debug' => true,
 );
