@@ -620,6 +620,64 @@ class View {
 	 * @return bool|mixed
 	 * @throws \Exception
 	 */
+	public function make_file_link($path, $data) {
+    \OC::$server->getLogger()->alert("Files  View: make_file_link entry" , array('lib' => 'Files'));
+		$absolutePath = Filesystem::normalizePath($this->getAbsolutePath($path));
+
+    $datadirectory = \OC::$server->getSystemConfig()->getValue("datadirectory");
+    $sf_ocPath = Filesystem::normalizePath($this->getAbsolutePath($data));
+    $sf_systemPath = $datadirectory . $sf_ocPath;
+    $target_systemPath = $datadirectory . $absolutePath;
+    \OC::$server->getLogger()->alert("Files  View: make_file_link ------ \$sf_systemPath is : $sf_systemPath" , array('lib' => 'Files'));
+    \OC::$server->getLogger()->alert("Files  View: make_file_link ------ \$target_systemPath is : $target_systemPath" , array('lib' => 'Files'));
+
+		if (Filesystem::isValidPath($path)
+			and !Filesystem::isFileBlacklisted($path)
+		) {
+			$path = $this->getRelativePath($absolutePath);
+
+			$this->lockFile($path, ILockingProvider::LOCK_SHARED);
+
+			$exists = $this->file_exists($path);
+			$run = true;
+			if ($this->shouldEmitHooks($path)) {
+				$this->emit_file_hooks_pre($exists, $path, $run);
+			}
+			if (!$run) {
+				$this->unlockFile($path, ILockingProvider::LOCK_SHARED);
+				return false;
+			}
+
+			$this->changeLock($path, ILockingProvider::LOCK_EXCLUSIVE);
+
+			/** @var \OC\Files\Storage\Storage $storage */
+			list($storage, $internalPath) = $this->resolvePath($path);
+			if (is_file($sf_systemPath)) {
+        $result = link($sf_systemPath, $target_systemPath);
+				$this->writeUpdate($storage, $internalPath);
+
+				$this->changeLock($path, ILockingProvider::LOCK_SHARED);
+
+				if ($this->shouldEmitHooks($path) && $result !== false) {
+					$this->emit_file_hooks_post($exists, $path);
+				}
+				$this->unlockFile($path, ILockingProvider::LOCK_SHARED);
+				return $result;
+			} else {
+				$this->unlockFile($path, ILockingProvider::LOCK_EXCLUSIVE);
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * @param string $path
+	 * @param mixed $data
+	 * @return bool|mixed
+	 * @throws \Exception
+	 */
 	public function file_put_contents($path, $data) {
 		if (is_resource($data)) { //not having to deal with streams in file_put_contents makes life easier
 			$absolutePath = Filesystem::normalizePath($this->getAbsolutePath($path));
@@ -982,6 +1040,37 @@ class View {
 		} else {
 			return false;
 		}
+	}
+
+	/**
+	 * @param string $samefile
+	 * @param string $path
+	 * @return bool|mixed
+	 * @throws \OCP\Files\InvalidPathException
+	 */
+	public function CreateFileLink($source, $target) {
+		$this->assertPathLength($target);
+		if (Filesystem::isValidPath($target)) {
+
+			// Get directory that the file is going into
+			$filePath = dirname($target);
+
+			// Create the directories if any
+			if (!$this->file_exists($filePath)) {
+				$result = $this->createParentDirectories($filePath);
+				if($result === false) {
+					return false;
+				}
+			}
+
+      \OC::$server->getLogger()->alert("Files  View: CreateFileLink ------ \$samefile is : $samefile" , array('lib' => 'Files'));
+      \OC::$server->getLogger()->alert("Files  View: CreateFileLink ------ \$path is : $path" , array('lib' => 'Files'));
+
+      $result = $this->make_file_link($target, $source);
+			return $result;
+			} else {
+				return false;
+			}
 	}
 
 	/**

@@ -737,6 +737,10 @@ class Filesystem {
 		return self::$defaultInstance->fromTmpFile($tmpFile, $path);
 	}
 
+	static public function CreateFileLink($source, $target) {
+		return self::$defaultInstance->CreateFileLink($source, $target);
+	}
+
 	static public function getMimeType($path) {
 		return self::$defaultInstance->getMimeType($path);
 	}

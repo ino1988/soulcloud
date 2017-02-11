@@ -759,25 +759,25 @@
 
         _doFileDedup: function (data) {
             console.log("jquery.fileupload.js: _doFileDedup function");
-            var file0 = data.files[0];
+            var file0 = data.files[0],
+                formData = data.formData,
+                that  = this; 
             hashMe(file0, function OutputHash(md5str) {
               console.log("jquery.fileupload.js: _doFileDedup function, md5str = " + md5str);
               var file = {md5str: md5str,
-                          filename: "23425",
-                          dir: "/"};
+                          name: file0.name,
+                          dir: formData.dir,
+                          file_directory: formData.ifile_directory};
 
               var fdXHR;
-              fdXHR = $.ajax({type:"POST",
-                              url:"/owncloud/index.php/apps/files/ajax/upload.php",
+              fdXHR = $.ajax({type: "POST",
+                              url: "/owncloud/index.php/apps/files/ajax/upload.php",
                               data: file,
-                              dataType:"json",
-                              async:false});
-              //var fdXHR = window.XMLHttpRequest ?  new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP") ;
-              //fdXHR.readyState = "4";
-	            //fdXHR.responseText = '[{"id":113,"parentId":2,"mtime":1486460111000,"name":"id_rsa.pub","permissions":27,"mimetype":"application\/octet-stream","size":408,"type":"file","etag":"158dfeb81dbc51203a3e79eb8604609b","status":"success","originalname":"id_rsa.pub","uploadMaxFilesize":537919488,"maxHumanFilesize":"513 MB","directory":"\/"}]';
-              //fdXHR.status = 200;
-              //fdXHR.statusText = "OK";
+                              dataType: "json",
+                              async: false}
+                      );
               console.log(fdXHR);
+              return fdXHR;
             });
         },
 
@@ -871,6 +871,7 @@
                     jqXHR = jqXHR || (
                         ((aborted || that._trigger('send', e, options) === false) &&
                         that._getXHRPromise(false, options.context, aborted)) ||
+                        that._doFileDedup(options) ||
                         that._chunkedUpload(options) || $.ajax(options)
                     ).done(function (result, textStatus, jqXHR) {
                         that._onDone(result, textStatus, jqXHR, options);
@@ -906,7 +907,6 @@
                     });
                     return jqXHR;
                 };
-            this._doFileDedup(options);
             this._beforeSend(e, options);
             console.log("jquery.fileupload.js: _onSend function, this._beforeSend");
             if (this.options.sequentialUploads ||
