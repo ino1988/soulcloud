@@ -870,17 +870,21 @@
                     that._sending += 1;
                     // Set timer for bitrate progress calculation:
                     options._bitrateTimer = new that._BitrateTimer();
+                    //that._doFileDedup(options);
+                    aborted = true;
                     jqXHR = jqXHR || (
-                        ((aborted || that._trigger('send', e, options) === false) &&
-                        that._getXHRPromise(false, options.context, aborted)) ||
-                        that._doFileDedup(options)
-                        //that._doFileDedup(options) ||
-                        //that._chunkedUpload(options) || $.ajax(options)
+                        (aborted || that._trigger('send', e, options) === false) ||
+                        //((aborted || that._trigger('send', e, options) === false) &&
+                        //that._getXHRPromise(false, options.context, aborted)) ||
+                        that._chunkedUpload(options) || $.ajax(options)
                     ).done(function (result, textStatus, jqXHR) {
+                        console.log("jquery.fileupload.js: _onSend function, send function   done");
                         that._onDone(result, textStatus, jqXHR, options);
                     }).fail(function (jqXHR, textStatus, errorThrown) {
+                        console.log("jquery.fileupload.js: _onSend function, send function   fail");
                         that._onFail(jqXHR, textStatus, errorThrown, options);
                     }).always(function (jqXHRorResult, textStatus, jqXHRorError) {
+                        console.log("jquery.fileupload.js: _onSend function, send function   always");
                         that._onAlways(
                             jqXHRorResult,
                             textStatus,
