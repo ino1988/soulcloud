@@ -188,6 +188,11 @@ if (isset($_POST['md5str'])) {
   	OCP\JSON::error(array(array('data' => array_merge(array('message' => $error, 'code' => $errorCode), $storageStats))));
   }
 } else {
+  // --------------------------------------------------
+  // --------------------------------------------------
+  // --------------------------------------------------
+  // --------------------------------------------------
+  \OC::$server->getLogger()->alert("upload test message *******************&&&&&&&&&&&&&&&&&&&&&*******************&&&&&&&&&&&&&&&&&&&&& ", array('app' => 'files'));
 
   $l = \OC::$server->getL10N('files');
   if (empty($_POST['dirToken'])) {
@@ -274,8 +279,6 @@ if (isset($_POST['md5str'])) {
   	}
   }
   $files = $_FILES['files'];
-  \OC::$server->getLogger()->alert("upload test: \$files is $files", array('app' => 'files'));
-  \OC::$server->getLogger()->alert(print_r($files, true), array('app' => 'files'));
   
   $error = false;
   
@@ -296,8 +299,6 @@ if (isset($_POST['md5str'])) {
   		'maxHumanFilesize' => $maxHumanFileSize)));
   	exit();
   }
-  
-  \OC::$server->getLogger()->alert("upload test: \$dir is $dir", array('app' => 'files'));
   
   $result = array();
   if (\OC\Files\Filesystem::isValidPath($dir) === true) {
@@ -333,8 +334,6 @@ if (isset($_POST['md5str'])) {
   			$returnedDir = $dir . $relativePath;
   		}
   		$returnedDir = \OC\Files\Filesystem::normalizePath($returnedDir);
-      \OC::$server->getLogger()->alert("upload test: \$target is $target", array('app' => 'files'));
-  
   
   		$exists = \OC\Files\Filesystem::file_exists($target);
   		if ($exists) {
@@ -374,7 +373,6 @@ if (isset($_POST['md5str'])) {
   		} else {
   			// file already exists
   			$meta = \OC\Files\Filesystem::getFileInfo($target);
-        \OC::$server->getLogger()->alert("upload test: file already exists \$meta is $meta", array('app' => 'files'));
   			if ($meta === false) {
   				$error = $l->t('Upload failed. Could not get file info.');
   			} else {

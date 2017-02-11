@@ -759,7 +759,8 @@
 
         _doFileDedup: function (data) {
             console.log("jquery.fileupload.js: _doFileDedup function");
-            var file0 = data.files[0],
+            var options = data,
+                file0 = data.files[0],
                 formData = data.formData,
                 ajax_data = data.data,
                 that  = this; 
@@ -772,12 +773,44 @@
 
               var fdXHR;
               ajax_data.filemd5 = md5str;
-              fdXHR = $.ajax({type: "POST",
-                              url: "/owncloud/index.php/apps/files/ajax/upload.php",
-                              data: file,
-                              dataType: "json",
-                              async: false}
+              $.ajax({type: "POST",
+                      url: "/owncloud/index.php/apps/files/ajax/upload.php",
+                      data: file,
+                      dataType: "json",
+                      async: false}
+                  ).done(function (result, textStatus, jqXHR) {
+                      if(result.status != 'success') {
+                          return;
+                      }
+                      fdXHR = jqXHR;
+                      that._onDone(result, textStatus, jqXHR, options);
+                      that._onAlways(
+                          result,
+                          textStatus,
+                          jqXHR,
+                          options
                       );
+                      that._sending -= 1;
+                      that._active -= 1;
+                      if (options.limitConcurrentUploads &&
+                              options.limitConcurrentUploads > that._sending) {
+                          // Start the next queued upload,
+                          // that has not been aborted:
+                          var nextSlot = that._slots.shift();
+                          while (nextSlot) {
+                              if (that._getDeferredState(nextSlot) === 'pending') {
+                                  nextSlot.resolve();
+                                  break;
+                              }
+                              nextSlot = that._slots.shift();
+                          }
+                      }
+                      if (that._active === 0) {
+                          // The stop callback is triggered when all uploads have
+                          // been completed, equivalent to the global ajaxStop event:
+                          that._trigger('stop');
+                      }
+                  });
               console.log(fdXHR);
               return fdXHR;
             });
@@ -865,17 +898,20 @@
                 slot,
                 pipe,
                 options = that._getAJAXSettings(data),
+                abort_processed,
                 send = function () {
                     console.log("jquery.fileupload.js: _onSend function, send function");
                     that._sending += 1;
                     // Set timer for bitrate progress calculation:
                     options._bitrateTimer = new that._BitrateTimer();
+                    abort_processed = (aborted || that._trigger('send', e, options) === false) &&
+                        that._getXHRPromise(false, options.context, aborted);
+                    if (!abort_processed) {
+                      jqXHR = that._doFileDedup(options);
+                    }
                     jqXHR = jqXHR || (
-                        ((aborted || that._trigger('send', e, options) === false) &&
-                        that._getXHRPromise(false, options.context, aborted)) ||
-                        that._doFileDedup(options)
-                        //that._doFileDedup(options) ||
-                        //that._chunkedUpload(options) || $.ajax(options)
+                        abort_processed ||
+                        that._chunkedUpload(options) || $.ajax(options)
                     ).done(function (result, textStatus, jqXHR) {
                         that._onDone(result, textStatus, jqXHR, options);
                     }).fail(function (jqXHR, textStatus, errorThrown) {
