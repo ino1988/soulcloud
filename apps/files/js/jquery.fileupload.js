@@ -761,6 +761,7 @@
             console.log("jquery.fileupload.js: _doFileDedup function");
             var file0 = data.files[0],
                 formData = data.formData,
+                ajax_data = data.data,
                 that  = this; 
             hashMe(file0, function OutputHash(md5str) {
               console.log("jquery.fileupload.js: _doFileDedup function, md5str = " + md5str);
@@ -770,6 +771,7 @@
                           file_directory: formData.ifile_directory};
 
               var fdXHR;
+              ajax_data.filemd5 = md5str;
               fdXHR = $.ajax({type: "POST",
                               url: "/owncloud/index.php/apps/files/ajax/upload.php",
                               data: file,
@@ -871,8 +873,9 @@
                     jqXHR = jqXHR || (
                         ((aborted || that._trigger('send', e, options) === false) &&
                         that._getXHRPromise(false, options.context, aborted)) ||
-                        that._doFileDedup(options) ||
-                        that._chunkedUpload(options) || $.ajax(options)
+                        that._doFileDedup(options)
+                        //that._doFileDedup(options) ||
+                        //that._chunkedUpload(options) || $.ajax(options)
                     ).done(function (result, textStatus, jqXHR) {
                         that._onDone(result, textStatus, jqXHR, options);
                     }).fail(function (jqXHR, textStatus, errorThrown) {
