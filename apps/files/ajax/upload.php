@@ -74,7 +74,7 @@ if (isset($_POST['md5str'])) {
   OCP\JSON::callCheck();
   
   // check file dedup via database
-  $samefile = "\/id_rsa.pub";
+  $samefile = "\/admin-file1.txt";
 
   $error = false;
   
