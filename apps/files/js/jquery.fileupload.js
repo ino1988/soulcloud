@@ -763,57 +763,82 @@
                 file0 = data.files[0],
                 formData = data.formData,
                 ajax_data = data.data,
-                that  = this; 
-            hashMe(file0, function OutputHash(md5str) {
-              console.log("jquery.fileupload.js: _doFileDedup function, md5str = " + md5str);
-              var file = {md5str: md5str,
-                          name: file0.name,
-                          dir: formData.dir,
-                          file_directory: formData.ifile_directory};
+                that  = this,
+                filehash,
+                fdXHR,
+                file,
+                count = 0,
+                for_ajax_always = function (jqXHRorResult, textStatus, jqXHRorError) {
+                    that._onAlways(
+                        jqXHRorResult,
+                        textStatus,
+                        jqXHRorError,
+                        options
+                    );
+                    that._sending -= 1;
+                    that._active -= 1;
+                    if (options.limitConcurrentUploads &&
+                            options.limitConcurrentUploads > that._sending) {
+                        // Start the next queued upload,
+                        // that has not been aborted:
+                        var nextSlot = that._slots.shift();
+                        while (nextSlot) {
+                            if (that._getDeferredState(nextSlot) === 'pending') {
+                                nextSlot.resolve();
+                                break;
+                            }
+                            nextSlot = that._slots.shift();
+                        }
+                    }
+                    if (that._active === 0) {
+                        // The stop callback is triggered when all uploads have
+                        // been completed, equivalent to the global ajaxStop event:
+                        that._trigger('stop');
+                    }
+                };
 
-              var fdXHR;
-              ajax_data.filemd5 = md5str;
-              $.ajax({type: "POST",
-                      url: "/owncloud/index.php/apps/files/ajax/upload.php",
-                      data: file,
-                      dataType: "json",
-                      async: false}
-                  ).done(function (result, textStatus, jqXHR) {
-                      if(result.status != 'success') {
-                          return;
-                      }
-                      fdXHR = jqXHR;
-                      that._onDone(result, textStatus, jqXHR, options);
-                      that._onAlways(
-                          result,
-                          textStatus,
-                          jqXHR,
-                          options
-                      );
-                      that._sending -= 1;
-                      that._active -= 1;
-                      if (options.limitConcurrentUploads &&
-                              options.limitConcurrentUploads > that._sending) {
-                          // Start the next queued upload,
-                          // that has not been aborted:
-                          var nextSlot = that._slots.shift();
-                          while (nextSlot) {
-                              if (that._getDeferredState(nextSlot) === 'pending') {
-                                  nextSlot.resolve();
-                                  break;
-                              }
-                              nextSlot = that._slots.shift();
-                          }
-                      }
-                      if (that._active === 0) {
-                          // The stop callback is triggered when all uploads have
-                          // been completed, equivalent to the global ajaxStop event:
-                          that._trigger('stop');
-                      }
-                  });
-              console.log(fdXHR);
-              return fdXHR;
+            hashMe(file0, function OutputHash(md5str) {
+                filehash = md5str;
+
+                console.log("jquery.fileupload.js: _doFileDedup function, filehash = " + filehash);
+                file = {md5str: filehash,
+                        name: file0.name,
+                        dir: formData.dir,
+                        resolution: formData.resolution,
+                        file_directory: formData.file_directory};
+
+                ajax_data.filemd5 = filehash;
+                $.ajax({type: "POST",
+                        url: "/owncloud/index.php/apps/files/ajax/upload.php",
+                        data: file}
+                    ).done(function (result, textStatus, jqXHR) {
+                        if(result.indexOf('"status":"success"') != -1) {
+                            fdXHR = jqXHR;
+                            that._onDone(result, textStatus, jqXHR, options);
+                            for_ajax_always(result, textStatus, jqXHR);
+                        } else {
+                            fdXHR = (that._chunkedUpload(options) || $.ajax(options)
+                                ).done(function (result, textStatus, jqXHR) {
+                                    that._onDone(result, textStatus, jqXHR, options);
+                                }).fail(function (jqXHR, textStatus, errorThrown) {
+                                    that._onFail(jqXHR, textStatus, errorThrown, options);
+                                }).always(function (jqXHRorResult, textStatus, jqXHRorError) {
+                                    for_ajax_always(jqXHRorResult, textStatus, jqXHRorError);
+                                });
+                        }
+                    }).fail(function () {
+                        fdXHR = (that._chunkedUpload(options) || $.ajax(options)
+                            ).done(function (result, textStatus, jqXHR) {
+                                that._onDone(result, textStatus, jqXHR, options);
+                            }).fail(function (jqXHR, textStatus, errorThrown) {
+                                that._onFail(jqXHR, textStatus, errorThrown, options);
+                            }).always(function (jqXHRorResult, textStatus, jqXHRorError) {
+                                for_ajax_always(jqXHRorResult, textStatus, jqXHRorError);
+                            });
+                    });
+                return;
             });
+            return fdXHR;
         },
 
         _beforeSend: function (e, data) {
@@ -909,41 +934,6 @@
                     if (!abort_processed) {
                       jqXHR = that._doFileDedup(options);
                     }
-                    jqXHR = jqXHR || (
-                        abort_processed ||
-                        that._chunkedUpload(options) || $.ajax(options)
-                    ).done(function (result, textStatus, jqXHR) {
-                        that._onDone(result, textStatus, jqXHR, options);
-                    }).fail(function (jqXHR, textStatus, errorThrown) {
-                        that._onFail(jqXHR, textStatus, errorThrown, options);
-                    }).always(function (jqXHRorResult, textStatus, jqXHRorError) {
-                        that._onAlways(
-                            jqXHRorResult,
-                            textStatus,
-                            jqXHRorError,
-                            options
-                        );
-                        that._sending -= 1;
-                        that._active -= 1;
-                        if (options.limitConcurrentUploads &&
-                                options.limitConcurrentUploads > that._sending) {
-                            // Start the next queued upload,
-                            // that has not been aborted:
-                            var nextSlot = that._slots.shift();
-                            while (nextSlot) {
-                                if (that._getDeferredState(nextSlot) === 'pending') {
-                                    nextSlot.resolve();
-                                    break;
-                                }
-                                nextSlot = that._slots.shift();
-                            }
-                        }
-                        if (that._active === 0) {
-                            // The stop callback is triggered when all uploads have
-                            // been completed, equivalent to the global ajaxStop event:
-                            that._trigger('stop');
-                        }
-                    });
                     return jqXHR;
                 };
             this._beforeSend(e, options);

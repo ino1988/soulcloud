@@ -141,7 +141,7 @@ if (isset($_POST['md5str'])) {
   					} else {
   						$data = \OCA\Files\Helper::formatFileInfo($meta);
   						$data['status'] = 'success';
-  						$data['originalname'] = $name;
+  						$data['originalname'] = $_POST['name'];
   						$data['uploadMaxFilesize'] = $maxUploadFileSize;
   						$data['maxHumanFilesize'] = $maxHumanFileSize;
   						$data['permissions'] = $meta['permissions'];

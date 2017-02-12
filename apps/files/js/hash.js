@@ -14,15 +14,19 @@ var hashMe = function (file, callbackFunction) {
                 this._binStart = binData;
                 break;
             case 1:
-                this._binEnd = binData
+                this._binEnd = binData;
         }
         
-        this._binStart && this._binEnd && this.md5sum(this._binStart, this._binEnd)
+        if (this._binStart && this._binEnd) {
+            this.md5sum(startOrEnd, this._binStart, this._binEnd);
+        }
     };
     
-    this.md5sum = function (start, end) {
+    this.md5sum = function (startOrEnd, start, end) {
         this._hash = rstr2hex(rstr_md5(start + end));
-        callback(this._hash);
+        if (startOrEnd) {
+          callback(this._hash);
+        }
     };
     
     this.getHash = function() {
@@ -68,7 +72,7 @@ var hashMe = function (file, callbackFunction) {
             thisObj.setBinAndHash(1, base64Data);
         };
 
-		fileManager1.readAsBinaryString(start);
+        fileManager1.readAsBinaryString(start);
         fileManager2.readAsBinaryString(end);
     };
     
